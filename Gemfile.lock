@@ -1,0 +1,12 @@
+GEM
+  remote: https://rubygems.org/
+  specs:
+    algorithms (0.6.1-java)
+    overrides (0.10.0)
+
+PLATFORMS
+  java
+
+DEPENDENCIES
+  algorithms
+  overrides
