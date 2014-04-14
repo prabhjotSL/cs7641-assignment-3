@@ -1,22 +1,22 @@
 
 class HelloGridWorld
-  include_package 'burlap.domain.singleagent.gridworld'
+  include_package 'burlap.domain.singleagent.gridworld.GridWorldDomain'
   include_package 'burlap.oomdp.core'
-  java_import 'burlap.oomdp.singleagent.explorer.VisualExplorer'
-  java_import 'burlap.oomdp.visualizer.Visualizer'
+  # java_import 'burlap.oomdp.singleagent.explorer.VisualExplorer'
+  # java_import 'burlap.oomdp.visualizer.Visualizer'
 
   def initialize
-    grid = self.class.data
-
-    v = GridWorldVisualizer.get_visualizer(grid.domain, grid.grid_world.map)
-    exp = VisualExplorer.new(grid.domain, v, grid.state)
-
-    exp.add_key_action("w", GridWorldDomain::ACTIONNORTH)
-    exp.add_key_action("s", GridWorldDomain::ACTIONSOUTH)
-    exp.add_key_action("a", GridWorldDomain::ACTIONWEST)
-    exp.add_key_action("d", GridWorldDomain::ACTIONEAST)
-
-    exp.init_gui
+    # grid = self.class.data
+    #
+    # v = GridWorldVisualizer.get_visualizer(grid.domain, grid.grid_world.map)
+    # exp = VisualExplorer.new(grid.domain, v, grid.state)
+    #
+    # exp.add_key_action("w", GridWorldDomain::ACTIONNORTH)
+    # exp.add_key_action("s", GridWorldDomain::ACTIONSOUTH)
+    # exp.add_key_action("a", GridWorldDomain::ACTIONWEST)
+    # exp.add_key_action("d", GridWorldDomain::ACTIONEAST)
+    #
+    # exp.init_gui
 
   end
 

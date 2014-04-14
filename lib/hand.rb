@@ -1,59 +1,35 @@
 class Hand
   include Comparable
 
+  attr_accessor :standing
+
   def initialize
     @cards = []
   end
 
   def <<(card)
-    @cards << card
+    @cards.concat(Array(card))
   end
 
   def worth
-    worth_hash = {}
-    aces = @cards.select(&:ace?)
-    rest = @cards.reject(&:ace?)
-    residual = rest.reduce(0) { |sum, card| sum += (card.modulo + 1) }
+    worth = 0
 
-    aces.value.map do |ace|
-      ace + residual
+    @cards.each do |c|
+      worth += c.value
     end
+
+    worth
   end
 
   def busted?
-    worth.all? { |w| w > 21 }
+    worth > 21
   end
 
-  def self.possible_combinations(aces)
-    @aces = aces.dup
-
-    while @aces.length > 1
-      @aces[0] = fold(@aces[0], @aces[1])
-      @aces.delete_at(1)
-    end
-
-    @aces
+  def <=>(other_hand)
+    worth <=> other_hand.worth
   end
 
-  def fold(first, rest)
-    first.map do |f|
-      rest.flatten! if rest.length == 1
-      rr = rest.map do |r|
-        if r.is_a?(Array)
-          fold(rest.first, rest[1..-1])
-        else
-          f + r
-        end
-      end
-    end.flatten
+  def to_s
+    "hand contains: #{@cards.map {|c| c.to_s }.join(', ')}. Value of #{worth}"
   end
 end
-
-__END__
-
-h = Hand.new
-4.times do
-  h << Card.new(1)
-end
-
-h.worth == [4]

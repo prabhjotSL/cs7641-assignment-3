@@ -2,8 +2,6 @@ class Card
   FACES = %w[Ace].concat((2..10).to_a).concat(%w[Jack Queen King])
   include Comparable
 
-  attr_reader :modulo
-
   def initialize(number)
     @number = number
     @modulo = (@number - 1) % 13
@@ -35,16 +33,10 @@ class Card
   end
 
   def value
-    value = [@modulo + 1]
-    value << 11 if ace?
-    value
-  end
-
-  def ace?
-    @modulo == 0
+    @modulo + 1
   end
 
   def <=>(card)
-    self.modulo <=> card.modulo
+    value <=> card.value
   end
 end
