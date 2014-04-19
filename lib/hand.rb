@@ -18,11 +18,11 @@ class Hand
       worth += c.value
     end
 
-    worth
-  end
-
-  def busted?
-    worth > 21
+    if worth > 21
+      -1
+    else
+      Rational(Math::exp(worth), Math::exp(21))
+    end
   end
 
   def <=>(other_hand)

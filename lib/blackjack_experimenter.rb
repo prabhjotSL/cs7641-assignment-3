@@ -1,8 +1,10 @@
 class BlackjackExperimenter
   def initialize
-    grid = HelloGridWorld.data
+    game = Blackjack.new
 
-    tf = SinglePFTF.new(grid.domain.get_prop_function(GridWorldDomain::PFATLOCATION))
+    domain = game.generateDomain
+
+    tf = SinglePFTF.new(domain.get_prop_function(GridWorldDomain::PFATLOCATION))
 
     rf = GoalBasedRF.new(TFGoalCondition.new(tf), 5, -0.1)
 
