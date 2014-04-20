@@ -1,5 +1,6 @@
+require 'benchmark'
+
 class MazeExperimenter
-  include_package 'burlap.domain.singleagent.gridworld'
   include_package 'burlap.oomdp.core'
   include_package 'burlap.behavior.singleagent.auxiliary.performance'
   java_import 'burlap.oomdp.core.TerminalFunction'
@@ -13,17 +14,18 @@ class MazeExperimenter
   java_import 'burlap.oomdp.singleagent.common.SinglePFTF'
   java_import 'burlap.behavior.singleagent.planning.stochastic.policyiteration.PolicyIteration'
   java_import 'burlap.behavior.singleagent.planning.stochastic.valueiteration.ValueIteration'
+
   def initialize
     @maze = Maze.new('./Prim_Maze.svg')
 
     @domain = @maze.generateDomain
     @state = Maze.get_one_agent_one_location_state(@domain)
     Maze.set_agent(@state, 0, 0)
-    Maze.set_location(@state, 0, 185, 185)
+    Maze.set_location(@state, 0, 89, 89)
 
     @tf = SinglePFTF.new(@domain.get_prop_function(Maze::PFATLOCATION))
 
-    @rf = GoalBasedRF.new(TFGoalCondition.new(@tf), 5, -0.1)
+    @rf = GoalBasedRF.new(TFGoalCondition.new(@tf), 50, 0)
 
     @sg = ConstantStateGenerator.new(@state)
 
@@ -33,13 +35,25 @@ class MazeExperimenter
   def policy_iteration
     pi = PolicyIteration.new(@domain, @rf, @tf, 0.9, @hashing_factory, 1, 100, 100)
 
-    pi.plan_from_state(@state)
+    timing = Benchmark.measure do
+      pi.plan_from_state(@state)
+    end
+
+    puts timing
+
+    pi
   end
 
   def value_iteration
     vi = ValueIteration.new(@domain, @rf, @tf, 0.9, @hashing_factory, 1, 100)
 
-    vi.plan_from_state(@state)
+    timing = Benchmark.measure do
+      vi.plan_from_state(@state)
+    end
+
+    puts timing
+
+    vi
   end
 
   def q_learning
@@ -58,13 +72,13 @@ class MazeExperimenter
       end
 
       def generateAgent
-        QLearning.new(@domain, @rf, @tf, 0.99, @hashing_factory, 0.3, 0.1)
+        QLearning.new(@domain, @rf, @tf, 0.90, @hashing_factory, 0.3, 0.5)
       end
     end
 
-    qq = q_learning_factory.new(domain, rf, tf, hashing_factory)
+    qq = q_learning_factory.new(@domain, @rf, @tf, @hashing_factory)
 
-    exp = LearningAlgorithmExperimenter.new(domain, rf, sg, 10, 100, qq)
+    exp = LearningAlgorithmExperimenter.new(@domain, @rf, @sg, 10, 100, qq)
 
     exp.set_up_plotting_configuration(500, 250, 2, 1000, TrialMode::MOSTRECENTANDAVERAGE, PerformanceMetric::CUMULATIVESTEPSPEREPISODE, PerformanceMetric::AVERAGEEPISODEREWARD)
 
