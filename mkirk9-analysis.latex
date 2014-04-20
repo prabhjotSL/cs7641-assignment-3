@@ -1,0 +1,174 @@
+\documentclass[12pt,oneside]{article}
+\usepackage{graphicx}
+\usepackage{verbatim}
+\usepackage{color}
+\usepackage{colortbl}
+\definecolor{Yellow}{rgb}{1,0.98,0.8}
+\begin{document}
+\title{Assignment 3: CS 7641}
+\author{Matthew Kirk}
+
+\maketitle
+\graphicspath{ { assets/ } }
+\section*{Introduction}
+This assignment's purpose is to explore and learn from two different markov decision processes. The goal is to center in on how agents work in a reinforcement learning context and under uncertainty as well as deterministic control. We will analyze both an MDP with a small amount of states, mini blackjack, as well as one with much more states (mouse and cheese). 
+ 
+\section*{Tools Used}
+
+The tools used heavily were BURLAP and JRuby. Like all the previous assignments I have done I like to use JRuby because it gives you access to the JVM and Java libraries without having to worry as much about static typing. It has a lot of great syntactical sugar and is easy to use. Unfortunately in this assignment though BURLAP was quite difficult to get working. I think since the library is still a bit nascent it hasn't had a lot of iteration on it yet so therefore there are some really confusing API's. Originally I wanted to study a much more complicated version of Blackjack but ended up culling it down quite a bit due to having to learn how to utilize BURLAP. 
+
+The problems we will be studying in this assignment I call the 'Mouse and the Cheese' problem as well as 'Mini Blackjack'. The following sections will introduce, analyze, and display findings after experimenting with these MDP's.
+
+\subsection*{The Mouse and the Cheese}
+
+This MDP is simply a mouse (agent) trying to find the cheese in a maze. I have defined this problem to initialize a mouse at point (0,0) and the cheese to be hidden inside of a maze at (89, 89). The entire grid is 190 points wide and 190 points high. There are 32367 states. 
+
+The given actions that a mouse can take are simply moving north, east, west, or south. The actual Maze was stolen off of Wikipedia and looks like this:
+
+\includegraphics{assets/Prim_Maze.png}
+
+As you can see it's a difficult enough Maze that could have a lot of pitfalls in it. Now the important thing to realize here is that there is only one piece of cheese. I could have easily put more pieces of cheese in the Maze but wanted to see how this operated given that there is not that much reward.
+
+Trying to solve these problems using Policy Iteration and Value Iteration yielded the following that we will analyze.
+
+\subsubsection*{Policy Iteration}
+
+Policy iteration was interesting with the mouse and the cheese problem. It took almost 20 minutes to run through all the policies for optimizing this. I think that's interesting because it is quite a bit slower than how fast Value Iteration converged on a solution. Below I have attached the output from running the command `policy\_iteration` off of a `MazeExperimenter` class object. This yields the output from BURLAP as well as timing at the bottom.
+
+\begin{verbatim}
+
+Starting reachability analysis
+Finished reachability analysis; # states: 32367
+Policy Eval Passes: 5
+Policy Eval Passes: 16
+Policy Eval Passes: 1
+l^?Policy Eval Passes: 1
+Policy Eval Passes: 1
+Policy Eval Passes: 1
+Policy Eval Passes: 1
+Policy Eval Passes: 1
+Policy Eval Passes: 1
+Policy Eval Passes: 1
+Policy Eval Passes: 1
+Policy Eval Passes: 5
+Policy Eval Passes: 1
+Policy Eval Passes: 1
+Policy Eval Passes: 1
+Policy Eval Passes: 6
+Policy Eval Passes: 1
+Policy Eval Passes: 1
+Policy Eval Passes: 1
+Policy Eval Passes: 1
+Policy Eval Passes: 1
+Policy Eval Passes: 1
+Policy Eval Passes: 1
+Policy Eval Passes: 1
+Policy Eval Passes: 1
+Policy Eval Passes: 1
+Policy Eval Passes: 1
+Policy Eval Passes: 1
+Policy Eval Passes: 1
+Policy Eval Passes: 1
+Policy Eval Passes: 1
+Policy Eval Passes: 1
+Policy Eval Passes: 1
+Policy Eval Passes: 1
+Policy Eval Passes: 1
+Policy Eval Passes: 1
+Policy Eval Passes: 1
+Policy Eval Passes: 1
+Policy Eval Passes: 0
+828.190000 267.210000 1095.400000 (1172.986000)
+
+\end{verbatim}
+
+\subsubsection*{Value Iteration}
+Value iteration was quite a bit faster than Policy Iteration
+
+\begin{verbatim}
+Starting reachability analysis
+Finished reachability analysis; # states: 32367
+Passes: 19
+ 60.600000   3.310000  63.910000 ( 49.276000)
+\end{verbatim}
+
+I think the main reason for that is policies are extremely large with this problem. There are so many states, and lots of policies you could actually iterate through while the values are quite low. So I think this actually makes sense.
+
+\subsubsection*{Q-Learning}
+
+Using Q-Learning to build a reinforcement learning solution to this took a long time. On top of that I had to set my java opts to include `-XX:+UseConcMarkSweepGC -Xmx4g`. This set the maximum memory to 4 gigs (which is the max on my macbook air), as well as utilize the concurrent mark sweep garbage collector. It was quite aggravating to get through 4 trials of Q-Learning and have an out of memory error, but this did work.
+
+The results were actually quite promising, but after I tuned it a bit. Originally I wanted to penalize movement around the maze and end the game as quickly as possible but found out quickly that the mouse would just give up and the average reward would be useless. It started at an average reward of -0.1. So I decided it would better to not penalize any exploration at all and to give a penalizing reward of 0 for movement. This helped tremendously. On top of that I made the cheese reward 50 instead of 1.  What resulted is this following graphic.
+\scalebox{0.4}{
+\includegraphics{assets/MazeQLearning.png}
+}
+
+What is really promising about this is that the algorithm actually learned over time and was able to get better inside of the maze! Very promising considering that this is just a much bigger version of the Grid World problem and was complicated with many more maze walls. On top of that the cheese was pretty much a needle in the haystack. The probability of hitting a piece of cheese was extremely low. Overall I was quite pleased with the result I got from the Maze problem.
+
+The next MDP I studied didn't fair as well as the maze problem.
+
+\subsection*{Mini Blackjack MDP}
+
+Blackjack is one of the few games at a casino where you can actually end up with better probability of winning. That is if you count cards. What I was more interested in is whether you could come up with an optimal policy without counting cards.
+
+This MDP is quite simple in that there are few states and actions. You can be in 43 states (1,2,3...,21 Standing or Not and Busted). In addition to that there are only two actions you can take in this simplistic blackjack game, Hit or Stand. I didn't want to introduce splitting or doubling down because that would complicate things quite a bit. 
+
+Originally I wanted to play against a dealer but decided it would be easier to study whether you could get as close to 21 without going over through reinforcement learning.
+
+The first important thing I found to define was rewards. As I'm sure you know Blackjack is about as getting close to 21 without going over, and every additional card you put on your deck without going over is exponentially better. If you are able to hit on 20 and get to 21 then that is a high risk but huge reward. So I wanted to define a reward function that made sense. I figured the best way would be to define it as:
+
+\begin{displaymath}
+R(s) = \left\{
+\begin{array}{lr}
+\frac{e^s}{e^21} & : s \in [0,21] \\
+-1 & : s \not\in [0,21]
+\end{array}
+\right.
+\end{displaymath}
+
+What this ends up looking like is very similar to how you'd think a blackjack reward would be. If you are at 20 then that is quite a bit higher than 5. It graphically looks like this.
+
+\scalebox{0.4}{
+\includegraphics{assets/payoff_blackjack.png}
+}
+
+\subsubsection*{Policy Iteration}
+Unlike the maze example above policy iteration with blackjack took almost no time at all. It converged very quickly though something peculiar happened which is that it thought there is only 7 states. This does make sense considering that in blackjack as you hit or stand there aren't that many states. And on top of that you can't really go through all examples. The processes is highly non-deterministic unlike the Maze. So therefore policy (and value) iteration thought there were a lot less states than there actually is. There was a slight advantage of policy iteration over value iteration mainly because the policy of a blackjack game is easier to define than the value.
+
+\begin{verbatim}
+Starting reachability analysis
+Finished reachability analysis; # states: 7
+Policy Eval Passes: 1
+  0.000000   0.000000   0.000000 (  0.005000)
+\end{verbatim}
+
+\subsubsection*{Value Iteration}
+
+Value iteration was slightly slower but really was similar results. It quickly converges and determined that there were only 6 states. Since this is such a stochastic processes (we have no clue what is happening next) that makes sense as well.
+
+\begin{verbatim}
+Starting reachability analysis
+Standing were not taking a hit
+You busted man
+Standing were not taking a hit
+Standing were not taking a hit
+Finished reachability analysis; # states: 6
+Passes: 0
+  0.010000   0.000000   0.010000 (  0.007000)
+\end{verbatim}
+
+\subsubsection*{Q-Learning}
+
+Unfortunately Q-Learning didn't find some amazing policy or learn the best way to play blackjack (in this context). Instead over each iteration it generally would lose. The results were highly variable and I think that is conducive to the domain considering that blackjack is highly variable. Casinos generally have an advantage due to a few factors but that is outside of the scope of this. When playing blackjack by oneself everything is random so therefore there is nothing to learn. We might as well switch blackjack out for a slot machine.
+
+\scalebox{0.4}{
+\includegraphics{assets/MiniBlackjackQLearning.png}
+}
+
+\section*{Conclusion}
+
+In conclusion this was an interesting project and highly rewarding when we could actually solve the mouse and cheese maze. Though I found the project very difficult due to interfacing with BURLAP which had a very bizarre API. I think since navigating a room is a canonical example in reinforcement learning that it makes sense that reinforcement learning algorithm would actually work. But unfortunately we couldn't say the same for Blackjack. That is mainly because blackjack is a highly stochastic process. There aren't very many actions one can take to gain an advantage. I think the only thing you can really do in that context is count cards and determine a bayesian probability of the next cards that will come into play. Perhaps I should have studied it earlier in the semester!
+
+Overall things turned out as expected after studying in depth. Blackjack is stochastic as I knew in the beginning, you can navigate a room. The interesting things for me was how slow policy iteration was in the Maze context. I think since policies are so large in that problem that's why.
+
+\end{document}

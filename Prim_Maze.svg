@@ -649,4 +649,8 @@
     <line x1="180" y1="180" x2="189" y2="180" />
     <line x1="189" y1="180" x2="189" y2="189" />
   </g>
+  <g stroke-linecap="round">
+    <circle cx="0" cy="0" r="9" fill="brown" stroke="brown" stroke-width="10"  />
+    <circle cx="89" cy="89" r="3" fill="yellow" stroke="yellow" stroke-width="3"  />
+  </g>
 </svg>
